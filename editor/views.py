@@ -11,7 +11,7 @@ def can_edit_post(post, user):
 	#Only the owner can edit a draft. Staff can edit a post after submission.
 	return user.groups.filter(name='staff').exists() and post.status == 'post'\
 	or\
-	user.is_superuser()\
+	user.is_superuser\
 	or\
 	user.id == post.owner.id and post.status == 'draft'
 
