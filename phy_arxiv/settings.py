@@ -24,7 +24,7 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['phy-arxiv.princeton.edu']
 
 
 # Application definition
@@ -86,6 +86,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 #Added by user
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 TEMPLATE_CONTEXT_PROCESSORS = (
 
     'django.contrib.auth.context_processors.auth',
