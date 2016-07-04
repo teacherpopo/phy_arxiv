@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Editor</title>
+
+		<!-- MathJax -->
+		<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		<script>
+			MathJax.Hub.Config({
+				showProcessingMessages: false,
+				tex2jax: { inlineMath: [['$','$'],['\\(','\\)']] },
+			});
+		</script>
+
+	    <!-- Bootstrap -->
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+		<!-- Markdown -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pagedown/1.0/Markdown.Converter.min.js"></script>
+
+		<!-- Sanitizer -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pagedown/1.0/Markdown.Sanitizer.min.js"></script>
+
+	
+	</head>
+
+	<body>
+
+		<form action="{%url 'submit_post' %}" method='post'>
+		{% csrf_token %}
+		{% if not title %}
+		Title <input type='text' name='title' id='title'>
+		{% else %}
+		Title <input type='text' name='title' value='{{title}}' id='title'>
+		{% endif %}
+		<p>
+		<!-- Make sure there is no space between {{content}} and <textarea> tag -->
+		{% if content %}
+		<textarea name='content' style="width:500px; height:200px" id="box" onkeyup="prerender(live)">{{ content }}</textarea>
+		{% else %}
+		<textarea name='content' style="width:500px; height:200px" id="box" onkeyup="prerender(live)">
+## This is a header
+> This is a blockquote
+
+This should be in **bold**			
+Here is some inline math $E=mc^2$  
+Math on a separate line:
+$$ a^2+b^2=c^2 $$
+		</textarea>
+		{% endif %}		
+		</p>
+		{%if post_id %}
+		<input type='hidden' name='post_id' value='{{post_id}}' id='post_id'>
+		{% else %}
+		<input type='hidden' name='post_id' value='' id='post_id'>
+		{% endif %}
+		<input type='button' value='save' id='save_button'>
+		<input type='button' value='submit' id='submit_button'>
+		<p id='save_result'></p>
+		</form>
+    	<div id="preview"></div>
+    	<div id="buffer"></div>
+
+    	<!-- Save (with ajax) and submit-->
+    	<script>
+    		$(document).ready(function(){
+    			$("#save_button").click(function(){
+    				if ($("#title").val() == '') alert('Title can not be empty.');
+    				else{
+	    				var data = $("form").serialize();
+	    				$.post("{%url 'save_post' %}", data, function(result, status){
+	    					$("#save_result").show();
+	    					$("#save_result").html(status);
+	    					$("#save_result").fadeOut(2000);
+	    					$("#post_id").val(result.post_id);
+	    				})
+	    			}
+    			})
+    			$("#submit_button").click(function(){
+    				if ($("#title").val() == '') alert('Title can not be empty.');
+    				else{
+    				if(confirm("Are you sure you want to submit your draft? Editing is not allowed after submission."))
+	    				$("form").submit();
+    				}
+    			})
+    		})
+    	</script>
+
+		<script>
+			var QUEUE =	MathJax.Callback.Queue();
+			var converter = Markdown.getSanitizingConverter();
+
+			function init(live) {
+				live.preview = document.getElementById("preview");
+				live.buffer = document.getElementById("buffer");
+				live.preview.style.position = "absolute";
+				live.buffer.style.position = "absolute";
+				live.preview.style.visibility = "visible";
+				live.buffer.style.visibility = "hidden";
+				setTimeout(render, 500, live);
+			}
+
+			function updateBufferText(live) {
+				live.flag = true;
+				live.buffer.innerHTML = converter.makeHtml(document.getElementById("box").value);
+			}
+
+			function revealBuffer_HidePreview_Swap(live) {
+				live.buffer.style.visibility = "visible";
+				live.preview.style.visibility = "hidden";
+				var buffer = live.buffer; var preview = live.preview;
+				live.buffer = preview; live.preview = buffer;
+				live.flag = false;
+			}
+
+			function raiseFlag(live) {
+				live.flag = true;
+			}
+
+			function lowerFlag(live) {
+				live.flag = false;
+			}
+
+			function avoidGlitch(live){
+				live.index -= 1;
+				if (live.index == 0){
+					if (live.flag){
+						prerender(live);
+					}else{
+						render(live);
+					}
+				}
+			}
+
+			function prerender(live){
+				live.index += 1;
+				setTimeout(avoidGlitch, live.interval, live);
+			}
+
+
+			function render(live) {
+				updateBufferText(live);
+				QUEUE.Push(["Typeset", MathJax.Hub, live.buffer]);
+				QUEUE.Push([revealBuffer_HidePreview_Swap, live]);
+			}
+
+			var live = {
+				preview: null,
+				buffer: null,
+				flag: false,
+				index: 0,
+				interval: 100
+			};
+
+
+
+		</script>
+
+
+
+
+		<script>
+			window.onload = init(live);
+		</script>
+		</body>
+
+</html>
+
+
+

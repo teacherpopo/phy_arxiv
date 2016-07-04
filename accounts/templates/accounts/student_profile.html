@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+		<h1> Welcome! You are logged in as {{request.user.username}}. </h1>
+
+		<form>
+		<input type="button" value="Log out" onClick="window.location.href='/accounts/logout/'">
+		</form>
+
+		<p> <a href="{%url 'new_post' %}" target='_blank'> New post </a> </p>
+		<p> Your posts: </p>
+		<ul>		
+		{%for post in posts %}
+			<li> 
+				<p> {{post.title}} </p>
+				<p> status: {{ post.status }} </p>
+				<p> <a href="{%url 'view_post' post.id %}" target='_blank'> View </a>
+				{% if post.status == 'draft' %}
+				&nbsp <a href = "{%url 'edit_post' post.id %}" target='_blank'> Edit </a>
+				&nbsp <a class='delete' href = "{%url 'delete_post' post.id %}" target='_blank'> Delete </a>
+				{% endif %}
+				</p>
+			</li>
+		{% empty %}
+			<li>
+			You don't have any posts yet. <a href="{%url 'new_post' %}" target='_blank'> Create your first one! </a>
+			</li>
+		{% endfor %}
+		</ul>
+		
+
+		
+	</body>
+</html>

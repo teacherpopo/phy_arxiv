@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Live preview app</title>
+
+		<!-- MathJax -->
+		<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		<script>
+			MathJax.Hub.Config({
+				showProcessingMessages: false,
+				tex2jax: { inlineMath: [['$','$'],['\\(','\\)']] },
+			});
+		</script>
+
+	  <!-- Bootstrap -->
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+		<!-- Markdown -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pagedown/1.0/Markdown.Converter.min.js"></script>
+
+		<!-- Sanitizer -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pagedown/1.0/Markdown.Sanitizer.min.js"></script>
+
+		<!-- Editor -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pagedown/1.0/Markdown.Editor.min.js"></script>
+
+	</head>
+
+	<body>
+		 <h1> Title: {{post.title}} </h1>
+		 <h2> Authors: 
+		 	{% for author in post.authors.all %}
+		 		{% if forloop.last %}
+		 			{{ author }}
+		 		{% else %}
+		 			{{author}},&nbsp
+		 		{% endif %}	
+		 	{% endfor %}
+		 </h2>
+		<div style='display:none'  id='wmd-button-bar'> </div>
+		<textarea  style='display:none' id="wmd-input">
+{{ post.content }}
+		</textarea>
+
+    	<div id="wmd-preview"></div>
+
+		<script>
+				var converter = Markdown.getSanitizingConverter();
+				var editor = new Markdown.Editor(converter);
+				editor.run()	
+		</script>
+
+		</body>
+
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+		<form action="/accounts/login/" method="post">
+   			{% csrf_token %}
+   			{{ form.as_p }}
+   			<!-- redirect url after login -->
+   			<input type="hidden" name="next" value="{{next}}">
+   		<input type="submit" value="Sign in">
+		</form>
+		<p> First visit? </p>
+		<form>
+		<input type="button" value="Register" onClick="window.location.href='/accounts/register/'">
+		</form>
+	</body>
+</html>
