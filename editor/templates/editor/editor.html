@@ -52,6 +52,7 @@
 			{% else %}
 			<input type='hidden' name='post_id' value='' id='post_id'>
 			{% endif %}
+			<input type='button' value='render' id='render_button'>
 			<input type='button' value='save' id='save_button'>
 			<input type='button' value='submit' id='submit_button'>
 			<p id='save_result'></p>
@@ -59,8 +60,8 @@
 		<!-- Live preview area for entry -->
   	<div id="preview"></div>
 		<!-- Start live preview application -->
-		<script>
-			var lp = new LivePreview("box", "preview", "render");
+		<script>			
+			var lp = new LivePreview("box", "preview", "render_button");
 		</script>
 
   	<!-- Save (with ajax) and submit-->
