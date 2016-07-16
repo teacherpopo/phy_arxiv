@@ -27,6 +27,24 @@
 		<!-- Editor -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/pagedown/1.0/Markdown.Editor.min.js"></script>
 
+		{% load staticfiles %}
+		<script src="{% static "editor/editor.js" %}"></script>
+
+		<style>
+			.user {
+				width:100px;
+				display:inline-block;
+				vertical-align:top;'
+			}
+
+			body{
+				margin:10px;
+			}
+
+			.private{
+				color:rgb(0,0,255);
+			}
+		</style>
 	</head>
 
 	<body>
@@ -40,17 +58,310 @@
 		 		{% endif %}	
 		 	{% endfor %}
 		 </h2>
-		<div style='display:none'  id='wmd-button-bar'> </div>
-		<textarea  style='display:none' id="wmd-input">
-{{ post.content }}
-		</textarea>
+		 <!-- Post preview -->
+		<div id='comment'>
+			<button type='button' style='display:none' id='wmd-button-bar'></button>
+			<textarea  style='display:none' id="wmd-input">{{ post.content }}</textarea>
+	    	<div id="wmd-preview"></div>
+	    	<!-- New comment on post-->
+			<p><button type='button' id='comment-button'>Comment</button></p>
+    	</div>
 
-    	<div id="wmd-preview"></div>
+    	<div class='comments_list'>
+    		{% for comments_set in comments_list %}
+    			<div id='user-comment-{{comments_set.comment.id}}'>
+    				<div class='user' id='user-{{comments_set.comment.id}}'>
+	    				<p>{{comments_set.comment.commenter.username}}:
+	    					{% if comments_set.comment.scope == 'private' %}
+	    						<br/><span class='private'>private message</span>
+	    					{% endif %}
+	    				</p>   				
+    				</div>
+    				<div class='self-and-child' style='display:inline-block'>
+    					<div id='comment-{{comments_set.comment.id}}'>				
+		    				{% if comments_set.comment.commenter.id == request.user.id %}
+			    				<form style='display:none' action="{%url 'save_comment'%}" method="post" id='form-{{comments_set.comment.id}}'>
+									{% csrf_token %}
+									<input type='hidden' name='comment_id' value="{{comments_set.comment.id}}">
+									<button type='button' style='display:none' id='wmd-button-bar-{{comments_set.comment.id}}'></button>
+			    					<p><textarea id='wmd-input-{{comments_set.comment.id}}'>{{comments_set.comment.content}}</textarea></p>
+			    					<button type='button' style='display:none' id='wmd-render-{{comments_set.comment.id}}'>render</button>
+			    					<button type='button' id='cancel-edit-{{comments_set.comment.id}}'>Cancel</button>
+									<input type='submit' value='submit' id='submit-edit-{{comments_set.comment.id}}'>
+								</form>
+							{% else %}
+								<button type='button' style='display:none' id='wmd-button-bar-{{comments_set.comment.id}}'></button>
+			    				<p style='display:none'><textarea  id='wmd-input-{{comments_set.comment.id}}'>{{comments_set.comment.content}}</textarea></p>
+			    			{% endif %}
 
+			    			<div id='wmd-preview-{{comments_set.comment.id}}'></div>
+
+			    			<p>
+			    			{% if comments_set.child_comments %}
+			    				<button type='button' id='expand-{{comments_set.comment.id}}'>See all replies</button>
+			    			{% endif %}
+
+		    				{% if comments_set.comment.commenter.id == request.user.id %}
+			    				<button type='button' id="edit-comment-{{comments_set.comment.id}}"> Edit </button>
+			    				<button type='button' id='delete-comment-{{comments_set.comment.id}}'> Delete </button>
+			    			</p>	
+		    				{% else %}
+		    					<!-- New comment on comment -->
+			    				<button type='button' id='comment-button-{{comments_set.comment.id}}'>Reply</button> 
+			    			</p>
+			    			{% endif %}
+	    				</div>
+
+	    				<div style="display:none;" id="child-list-{{comments_set.comment.id}}">
+	    				{% for child_comment in comments_set.child_comments %}
+	    					<div id='user-comment-{{child_comment.id}}'>
+		    					<div class='user' id='user-{{child_comment.id}}'>
+			    					<p>{{child_comment.commenter.username}}:
+			    					{% if child_comment.reply_to %}
+			    						&#64{{child_comment.reply_to.username}} 
+			    					{% endif %}
+			    					{% if child_comment.scope == 'private' %}
+			    					<br/><span class='private'>private message</span>
+			    					{% endif %}
+			    					</p>			    					
+		    					</div>
+	    						<div id='comment-{{child_comment.id}}' style="display:inline-block">		
+									{% if child_comment.commenter.id == request.user.id %}									
+			    						<form style='display:none' action="{%url 'save_comment'%}" method="post" id='form-{{child_comment.id}}'>
+											{% csrf_token %}
+											<input type='hidden' name='comment_id' value="{{child_comment.id}}">
+											<button type='button' style='display:none' id='wmd-button-bar-{{child_comment.id}}'></button>
+				    						<p><textarea id='wmd-input-{{child_comment.id}}'>{{child_comment.content}}</textarea></p>
+				    						<button type='button' style="display:none" id="wmd-render-{{child_comment.id}}">render</button>
+				    						<button type='button' id='cancel-edit-{{child_comment.id}}'>Cancel</button>
+				    						<input type='submit' value='Submit' id='submit-edit-{{child_comment.id}}'>
+			    						</form>
+									{% else %}
+										<button type='button' style='display:none' id='wmd-button-bar-{{child_comment.id}}'></button>
+			    						<p style='display:none'><textarea  id='wmd-input-{{child_comment.id}}'>{{child_comment.content}}</textarea></p>
+									{% endif %}
+
+									<div id="wmd-preview-{{child_comment.id}}"></div>
+
+									<p>
+									{% if child_comment.commenter.id == request.user.id %}			    					
+				    					<button type='button' id="edit-comment-{{child_comment.id}}"> Edit </button>
+				    				 	<button type='button' id='delete-comment-{{child_comment.id}}'> Delete </button>
+			    					</p>
+									{% else %}
+										<button type='button' id='comment-button-{{child_comment.id}}'>Reply</button>
+									</p>																	
+									{% endif %}
+								</div>
+							</div>   					 				
+	    				{% endfor %}
+	    				</div>	    				
+    				</div>
+    			</div>
+    		{% endfor %}
+    	</div>
+
+    	<!-- Use the original markdown editor for existing comments, LivePreview for new comments.-->
 		<script>
+
+				
+
 				var converter = Markdown.getSanitizingConverter();
-				var editor = new Markdown.Editor(converter);
-				editor.run()	
+				$("[id^=wmd-input]").each(function(){
+					var editor = new Markdown.Editor(converter, this.id.replace("wmd-input",''));
+					editor.run();
+				})
+
+				$("[id^=expand]").click(function(e){
+					var list_id = this.id.replace("expand","child-list")
+					$('#'+list_id).toggle();
+				})
+
+				$("[id^=comment-button]").click(function(e){
+					var div_id = this.id.replace("-button","");
+					var parent_post_id = '';
+					var parent_comment_id = '';
+					if (div_id == 'comment') parent_post_id = '{{post.id}}'
+					else parent_comment_id = div_id.replace("comment-","");
+					
+					var input_id = div_id.replace("comment",'input');
+					var preview_id = input_id.replace("input",'preview');
+					var render_id = input_id.replace("input",'render');
+					if ($("#"+div_id).nextAll('div[class=new-comment]').length != 0)
+						alert("You already have an active comment area for this post.")
+					else {
+						var private_message = "<p><input type='checkbox' name='scope'> This is a private message.</p>";
+						if ($("#"+div_id.replace("comment","user")).find(".private").length !=0)
+							private_message = "<p><input type='hidden' name='scope' value='private'> This is a private message.</p>"
+						$("#"+div_id).after("\
+							<div class='new-comment'>\
+								<form action='/post/comment/save/' method='post'>\
+									{% csrf_token %}\
+									<input type='hidden' name='parent_post_id' value='" + parent_post_id +"'>\
+									<input type='hidden' name='parent_comment_id' value='" + parent_comment_id +"'>\
+		    						<p><textarea name='content' id='" + input_id + "'></textarea></p>\
+		    						" + private_message + "\
+		    						<button type='button' style='display:none' id='" + render_id + "'>render</button>\
+		    						<input type='button' value='Cancel' class='cancel'>\
+		    						<input type='submit' value='Submit' class='submit'>\
+					    		</form>\
+					    		<div id='" + preview_id +"'></div>\
+					    	</div>\
+						")
+						var livepreview = new LivePreview( input_id, preview_id, render_id);
+						$('#'+input_id).keyup(livepreview.prerender())
+					}
+					
+				})
+				
+				$(document).on('click', 'input[class=submit]', function(e){
+					e.preventDefault();
+					var form = $(this).parents('form');
+					var comment_block = $(this).parents('div[class=new-comment]')
+					console.log(form)
+					var content = form.find('textarea').val();
+					if (content=='') alert("You can not send an empty message.");
+					else{					
+						var data = form.serialize();
+						console.log(data)
+						$.ajax({
+							type: 'POST',
+	    					url: "{%url 'save_comment' %}",
+	    					data: data,
+	    					success: function(result, status){
+	    						console.log(status);	    						
+	    						var string = "";
+	    						var private_message = "";
+    							string = "<div class='user' id='user-" +result.comment_id + "'>"+result.commenter+":";
+    							if (result.hasOwnProperty('reply_to'))
+    								string = string+"&#64"+result.reply_to;							
+    							if (result.scope == 'private'){
+    								string = string+" "+"<br/><span class='private'>private message</span>";
+    								private_message = "<p>This is a private message.</p>";
+    							}
+    							string = string + "</div>"   							
+    							var block_id = form.find('textarea').attr('id').replace('input','comment');
+    							comment_block.remove();
+    							$('#'+block_id).after("<div id='user-comment-"+result.comment_id+"'>"+string+"\
+    									<div style='display:inline-block' id='comment-" + result.comment_id +"'>\
+	    									<form style='display:none' action='/post/comment/save/' method='post' id='form-"+result.comment_id+"'>\
+												{% csrf_token %}\
+												<input type='hidden' name='comment_id' value='" + result.comment_id +"'>\
+												<div type='button' style='display:none' id='wmd-button-bar-"+result.comment_id+"'></div>\
+					    						<p><textarea id='wmd-input-" + result.comment_id + "'>"+content+"</textarea></p>\
+					    						" + private_message + "\
+					    						<button type='button' style='display:none' id='wmd-render-" + result.comment_id + "'>render</button>\
+					    						<button type='button' id='cancel-edit-" + result.comment_id + "'>Cancel</button>\
+					    						<button type='button' id='submit-edit-" + result.comment_id + "'>Submit</button>\
+								    		</form>\
+								    		<div id='wmd-preview-" + result.comment_id + "'></div\
+								    		<p>\
+								    			<button type='button' id='edit-comment-" + result.comment_id + "'> Edit </button>\
+								    			<button type='button' id='delete-comment-" + result.comment_id + "'> Delete </button>\
+								    		</p>\
+    									</div>\
+    									</div>\
+    							")
+    							var editor = new Markdown.Editor(converter, '-'+result.comment_id);
+								editor.run();
+    							
+	    					},
+	    					error: function(XHR, status){
+	    						console.log(status)
+	    					}
+						});
+					}
+
+				})
+
+				$(document).on('click',"[id^=submit-edit]", function(e){
+					e.preventDefault();
+					var form_id = this.id.replace("submit-edit","form");
+					var content = $('#'+form_id+' textarea[id]').val();
+					if (content=='') alert("You can not send an empty message.");
+					else{					
+						var data = $("#"+form_id).serialize();
+						console.log(data)
+						$.ajax({
+							type: 'POST',
+	    					url: "{%url 'save_comment' %}",
+	    					data: data,
+	    					success: function(result, status){
+	    						console.log(status);
+	    						$("#"+form_id).hide();
+	    						
+	    						$('#'+form_id+" textarea[class=original-content]").remove();
+	    						
+	    						buttons_id = form_id.replace("form","buttons");
+	    						console.log(buttons_id);
+								$('#'+buttons_id).show();
+	    					},
+	    					error: function(XHR, status){
+	    						console.log(status)
+	    					}
+						});
+					}
+
+				})
+
+				$(document).on('click',"[id^=edit-comment]", function(e){
+					var form_id = this.id.replace("edit-comment","form")
+					console.log(form_id)
+					$('#'+form_id).show();
+					
+					var input_id = $('#'+form_id+" textarea[id]").attr('id');
+					console.log(input_id)
+					var original_content = $('#'+input_id).val();
+					$('#'+input_id).before("<textarea style='display:none' class='original-content'>"+original_content+"</textarea>");
+					$('#'+input_id).off();
+					var preview_id = input_id.replace("input","preview");
+					$('#'+preview_id).html('');
+					var render_id =  input_id.replace("input", "render");
+					var livepreview = new LivePreview( input_id, preview_id, render_id);
+					$('#'+input_id).keyup(livepreview.prerender());
+										
+				})
+
+				$(document).on('click',"input[class=cancel]", function(){						
+						$(this).parents('div[class=new-comment]').remove();
+					})
+
+				$(document).on('click', ("[id^=cancel-edit]"), function(){
+						var form_id = this.id.replace("cancel-edit","form")
+						var original_content = $('#'+form_id+" textarea[class=original-content]").val();
+						$('#'+form_id+" textarea[class=original-content]").remove();
+						$('#'+form_id).hide();
+						
+						var input_id = $('#'+form_id+" textarea[id]").attr('id');
+						$('#'+input_id).off();
+						$('#'+form_id+" textarea[id]").val(original_content);
+						var preview_id = input_id.replace("input","preview");
+						$('#'+preview_id).html('');						
+						var render_id =  input_id.replace("input", "render");
+						var livepreview = new LivePreview( input_id, preview_id, render_id);
+						livepreview.prerender();
+						
+					})
+
+				$(document).on('click',"[id^=delete-comment]", function(e){
+					if(confirm("Are you sure you want to delete this message?")){
+						comment_id = this.id.replace('delete-comment-','')
+						$.ajax({
+							type: 'GET',
+	    					url: "/post/comment/delete/"+comment_id,
+	    					success: function(result, status){
+	    						console.log(status);
+	    						var block_id = "user-comment-"+comment_id;
+	    						console.log(block_id);
+	    						$("#"+block_id).remove();
+	    					},
+	    					error: function(XHR, status){
+	    						console.log(status);
+	    					}
+						});
+					}
+				})			
+
 		</script>
 
 		</body>
