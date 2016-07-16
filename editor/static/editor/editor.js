@@ -24,8 +24,8 @@ function LivePreview(entryId, previewId, manualId, maxLength = 1000){
 	this.base.appendChild(this.preview);
 	this.base.appendChild(this.buffer);
 
-	//this.preview.style.position = "absolute";
-	//this.buffer.style.position = "absolute";
+	this.preview.style.position = "static";
+	this.buffer.style.position = "static";
 	this.preview.style.display = "block";
 	this.buffer.style.display = "none";
 
