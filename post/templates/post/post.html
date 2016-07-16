@@ -96,7 +96,7 @@
 
 			    			<div id='wmd-preview-{{comments_set.comment.id}}'></div>
 
-			    			<p>
+			    			<p id='buttons-{{comments_set.comment.id}}'>
 			    			{% if comments_set.child_comments %}
 			    				<button type='button' id='expand-{{comments_set.comment.id}}'>See all replies</button>
 			    			{% endif %}
@@ -143,7 +143,7 @@
 
 									<div id="wmd-preview-{{child_comment.id}}"></div>
 
-									<p>
+									<p id='buttons-{{child_comment.id}}'>
 									{% if child_comment.commenter.id == request.user.id %}			    					
 				    					<button type='button' id="edit-comment-{{child_comment.id}}"> Edit </button>
 				    				 	<button type='button' id='delete-comment-{{child_comment.id}}'> Delete </button>
@@ -164,7 +164,7 @@
     	<!-- Use the original markdown editor for existing comments, LivePreview for new comments.-->
 		<script>
 
-				
+				livepreview_list = {};
 
 				var converter = Markdown.getSanitizingConverter();
 				$("[id^=wmd-input]").each(function(){
@@ -221,12 +221,13 @@
 					console.log(form)
 					var content = form.find('textarea').val();
 					if (content=='') alert("You can not send an empty message.");
-					else{					
+					else{
+						var preview = comment_block.find("div[id^=preview]").html();				
 						var data = form.serialize();
 						console.log(data)
 						$.ajax({
 							type: 'POST',
-	    					url: "{%url 'save_comment' %}",
+	    					url: "/post/comment/save/",
 	    					data: data,
 	    					success: function(result, status){
 	    						console.log(status);	    						
@@ -254,16 +255,15 @@
 					    						<button type='button' id='cancel-edit-" + result.comment_id + "'>Cancel</button>\
 					    						<button type='button' id='submit-edit-" + result.comment_id + "'>Submit</button>\
 								    		</form>\
-								    		<div id='wmd-preview-" + result.comment_id + "'></div\
-								    		<p>\
+								    		<div id='wmd-preview-" + result.comment_id + "'>" + preview +"</div>\
+								    		<p id='buttons-"+result.comment_id+"'>\
 								    			<button type='button' id='edit-comment-" + result.comment_id + "'> Edit </button>\
 								    			<button type='button' id='delete-comment-" + result.comment_id + "'> Delete </button>\
 								    		</p>\
     									</div>\
     									</div>\
     							")
-    							var editor = new Markdown.Editor(converter, '-'+result.comment_id);
-								editor.run();
+    							
     							
 	    					},
 	    					error: function(XHR, status){
@@ -284,7 +284,7 @@
 						console.log(data)
 						$.ajax({
 							type: 'POST',
-	    					url: "{%url 'save_comment' %}",
+	    					url: "/post/comment/save/",
 	    					data: data,
 	    					success: function(result, status){
 	    						console.log(status);
@@ -308,17 +308,22 @@
 					var form_id = this.id.replace("edit-comment","form")
 					console.log(form_id)
 					$('#'+form_id).show();
-					
+					var buttons_id = form_id.replace('form','buttons');
+					$('#'+buttons_id).hide();
 					var input_id = $('#'+form_id+" textarea[id]").attr('id');
 					console.log(input_id)
 					var original_content = $('#'+input_id).val();
 					$('#'+input_id).before("<textarea style='display:none' class='original-content'>"+original_content+"</textarea>");
-					$('#'+input_id).off();
-					var preview_id = input_id.replace("input","preview");
-					$('#'+preview_id).html('');
-					var render_id =  input_id.replace("input", "render");
-					var livepreview = new LivePreview( input_id, preview_id, render_id);
-					$('#'+input_id).keyup(livepreview.prerender());
+					if (!livepreview_list.hasOwnProperty(input_id)){
+						$('#'+input_id).remove();
+						$('#'+form_id).find("textarea").after("<p><textarea id='" + input_id + "'>"+original_content+"</textarea></p>")
+						var preview_id = input_id.replace("input","preview");
+						$('#'+preview_id).html('');
+						var render_id =  input_id.replace("input", "render");
+						var livepreview = new LivePreview( input_id, preview_id, render_id);
+						$('#'+input_id).keyup(livepreview.prerender());
+						livepreview_list[input_id] = livepreview;
+					}
 										
 				})
 
@@ -330,17 +335,14 @@
 						var form_id = this.id.replace("cancel-edit","form")
 						var original_content = $('#'+form_id+" textarea[class=original-content]").val();
 						$('#'+form_id+" textarea[class=original-content]").remove();
-						$('#'+form_id).hide();
-						
-						var input_id = $('#'+form_id+" textarea[id]").attr('id');
-						$('#'+input_id).off();
+						$('#'+form_id).hide();						
 						$('#'+form_id+" textarea[id]").val(original_content);
-						var preview_id = input_id.replace("input","preview");
-						$('#'+preview_id).html('');						
-						var render_id =  input_id.replace("input", "render");
-						var livepreview = new LivePreview( input_id, preview_id, render_id);
-						livepreview.prerender();
-						
+						var input_id = form_id.replace("form","wmd-input")
+						livepreview_list[input_id].prerender();
+						buttons_id = form_id.replace("form","buttons");
+	    				console.log(buttons_id);
+						$('#'+buttons_id).show();
+
 					})
 
 				$(document).on('click',"[id^=delete-comment]", function(e){
