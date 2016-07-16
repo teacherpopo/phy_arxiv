@@ -40,7 +40,7 @@
 			Title <input type='text' name='title' value='{{title}}' id='title'>
 			{% endif %}
 			<p>
-			<!-- Make sure there is no space between {{content}} and <textarea> tag -->
+			<!-- Make sure there is no space between content and <textarea> tag -->
 			{% if content %}
 			<textarea name='content' style="width:500px; height:200px" id="box">{{ content }}</textarea>
 			{% else %}
@@ -71,11 +71,20 @@
   				if ($("#title").val() == '') alert('Title can not be empty.');
   				else{
     				var data = $("form").serialize();
-    				$.post("{%url 'save_post' %}", data, function(result, status){
-    					$("#save_result").show();
-    					$("#save_result").html(status);
-    					$("#save_result").fadeOut(2000);
-    					$("#post_id").val(result.post_id);
+    				$.ajax({
+    					type: 'POST',
+    					url: "{%url 'save_post' %}",
+    					data: data,
+    					success: function(result, status){
+	    					$("#save_result").show();
+	    					$("#save_result").html(status);
+	    					$("#save_result").fadeOut(2000);
+	    					$("#post_id").val(result.post_id);
+    					},
+    					error: function(XHR, status){
+    						$("#save_result").show();
+	    					$("#save_result").html("<span style='color:rgb(255,0,0)'>"+status+"</span>");
+    					}
     				})
     			}
   			})
