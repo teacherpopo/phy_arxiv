@@ -93,10 +93,7 @@ function LivePreview(entryId, previewId, manualId, maxLength = 1000){
 		// encode all substrings of the form $...$ and $$...$$ in this.entry.value and save in this.encoded
 		this.encoded = this.encodeHelper(this.entry.value);
 	}
-<<<<<<< HEAD:editor/static/editor/editor.js
-=======
 
->>>>>>> comments_arxiv_test:static/editor/editor.js
 
 	this.updateBufferText = function(){
 		this.flag = true;
