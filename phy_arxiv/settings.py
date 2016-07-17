@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'accounts',
     'post',
     'editor',
+		'oai',
 )
 
 MIDDLEWARE_CLASSES = (

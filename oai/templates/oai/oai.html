@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>oai</title>
+		<!-- MathJax -->
+		<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		<script>
+			<!-- Render $...$ expressions with MathJax -->
+			MathJax.Hub.Config({
+				showProcessingMessages: false,
+				tex2jax: { inlineMath: [['$','$'],['\\(','\\)']] }, 
+			});
+		</script>
+
+
+		<!-- jQuery -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+		{% load staticfiles %}
+	</head>
+
+	<body>
+		<div>
+			Filter: <br><textarea rows="5" cols="50" id="filter"></textarea><br>
+
+		</div>
+		<div id="display"></div>
+		<div id="dummy"></div>
+
+		<script src="{% static "oai/oai.js" %}"></script>
+		<script>
+			var f = new Filter("filter", "display");
+			
+		</script>
+
+
+	</body>
+</html>
