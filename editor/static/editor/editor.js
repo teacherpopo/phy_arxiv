@@ -24,6 +24,7 @@ function LivePreview(entryId, previewId, manualId, maxLength = 1000){
 	this.base.appendChild(this.preview);
 	this.base.appendChild(this.buffer);
 
+
 	this.preview.style.position = "absolute";
 	this.buffer.style.position = "absolute";
 	this.preview.style.visibility = "visible";
@@ -92,6 +93,10 @@ function LivePreview(entryId, previewId, manualId, maxLength = 1000){
 		// encode all substrings of the form $...$ and $$...$$ in this.entry.value and save in this.encoded
 		this.encoded = this.encodeHelper(this.entry.value);
 	}
+<<<<<<< HEAD:editor/static/editor/editor.js
+=======
+
+>>>>>>> comments_arxiv_test:static/editor/editor.js
 
 	this.updateBufferText = function(){
 		this.flag = true;
@@ -100,8 +105,8 @@ function LivePreview(entryId, previewId, manualId, maxLength = 1000){
 	};
 
 	this.revealBuffer_HidePreview_Swap = function() {
-		this.buffer.style.visibility = "visible";
-		this.preview.style.visibility = "hidden";
+		this.buffer.style.display = "block";
+		this.preview.style.display = "none";
 		var bufferTmp = this.buffer; var previewTmp = this.preview;
 		this.buffer = previewTmp; this.preview = bufferTmp;
 		this.flag = false;

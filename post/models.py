@@ -17,9 +17,33 @@ class PostModel(models.Model):
 
 	#A "draft" turns into a "post" after submission 
 	status = models.CharField(max_length=20)
+
+	#"private" or "public", default is "private".
+	scope = models.CharField(max_length=20)
 	
 	owner = models.ForeignKey(User, related_name='owner')
 	authors = models.ManyToManyField(User, related_name='authors')
 
 	def __unicode__(self):
 		return self.title
+
+class CommentModel(models.Model):
+	date_stamp = models.DateTimeField()
+	content = models.TextField()
+
+	#"private" or "public"
+	scope = models.CharField(max_length=20)
+
+	#The parent post/comment a comment belongs to.
+	parent_post = models.ForeignKey(PostModel, null=True, blank=True, related_name='comments')
+	parent_comment = models.ForeignKey('self', null=True, blank=True, related_name = 'child_comments')
+
+	commenter = models.ForeignKey(User, related_name='commenter')
+	#A commenter can specify a user to reply to.
+	reply_to = models.ForeignKey(User, null=True, blank=True, related_name = 'reply_to')
+
+	def __unicode__(self):
+		if self.parent_post:
+			return "Comment on post "+str(self.parent_post.id)
+		if self.parent_comment:
+			return "Comment on comment "+str(self.parent_comment.id)
