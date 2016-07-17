@@ -6,6 +6,7 @@ admin.autodiscover()
 from accounts import urls as accounts_urls
 from editor import urls as editor_urls
 from post import urls as post_urls
+from oai import urls as oai_urls
 from django.views.generic.base import RedirectView
 
 urlpatterns = patterns('',
@@ -26,4 +27,7 @@ urlpatterns = patterns('',
 
     #View posts
     url(r'^post/', include(post_urls)),
+
+		#View arXiv/OAI
+		url(r'^oai/', include(oai_urls)),
 )
