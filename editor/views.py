@@ -66,6 +66,7 @@ def save_draft(request):
 		#If the draft has never been saved before, create a new instance.
 		post = PostModel(title=title, content=content, date_stamp = datetime.now(), owner=request.user)
 		post.status = 'draft'
+		post.scope = 'private'
 		post.save()
 		post.authors.add(request.user)
 	
@@ -93,6 +94,7 @@ def submit(request):
 		#If the draft has never been saved before, create a new instance.
 		post = PostModel(title=title, content=content, date_stamp = datetime.now(), owner=request.user)
 		post.status = 'post'
+		post.scope = 'private'
 		post.save()
 		post.authors.add(request.user)
 
