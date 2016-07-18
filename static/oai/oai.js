@@ -585,7 +585,7 @@ function Filter(filterId, displayId){
 		if (!this.isFocused || (this.selection == 0 && step < 0) || (this.selection == this.body.length - 1 && step > 0)) {return;}
 		if (step > 0 && (this.selection + step >= this.body.length)){
 			this.selection = this.body.length - 1;
-			this.goTo(this.body.length - this.N);
+			this.goTo(Math.max(0,this.body.length - this.N));
 		}else if (step < 0 && (this.selection < -step)){
 			this.selection = 0;
 			this.goTo(0);
