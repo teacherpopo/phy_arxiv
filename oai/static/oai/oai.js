@@ -16,6 +16,10 @@
 		return e.keyCode == 82;
 	}
 
+	this.isA = function(e){
+		return e.keyCode == 65;
+	}
+
 	this.isSpace = function(e){
 		return e.keyCode == 32;
 	}
@@ -215,6 +219,8 @@ function Filter(filterId, displayId){
 					parent.moveSelection(parent.N);
 				}else if (keyboard.isNumeric(e) || keyboard.isR(e)){
 					parent.rate(parent.selection, e);
+				}else if (keyboard.isA(e)){
+					parent.archive(parent.selection);
 				}
 			}
 		}
@@ -492,10 +498,15 @@ function Filter(filterId, displayId){
 		var title = jsonElement["title"];
 		var authors = JSON.parse(jsonElement["authors"]);
 		var rating = jsonElement["rating"];	
+		var archived = jsonElement["archived"];
 		var printHTML = "<font color=\"#FF0000\">" +(index+1)+"</font>" + "  <b>"+identifier + "</b>";
 		if (rating != null){
 			printHTML += " <font color=\"#BF00FF\">r" + rating.toString() + "</font>";
 		}
+		if (archived){
+			printHTML += " <font color=\"#FFA500\">a</font>";
+		}
+
 		printHTML += "<br>";
 		printHTML += title + "<br>";
 
@@ -584,6 +595,27 @@ function Filter(filterId, displayId){
 		for (var i = 0; i < this.body.length; i++){
 			if (this.body[i]["identifier"] == identifier){this.body[i]["rating"] = rating;}
 		}
+	}
+
+	this.updateArchive = function(identifier){
+		for (var i = 0; i < this.body.length; i++){
+			if (this.body[i]["identifier"] == identifier){this.body[i]["archived"] = (this.body[i]["archived"]+1)%2;}
+		}
+	}
+
+	this.archive = function(index){
+		var tagElement = $("#tagElement-" + index.toString());
+		var identifier = tagElement[0].identifier;
+		this.updateArchive(identifier);
+		this.displaySearch();
+		$.ajax({
+			url: "/oai/archive",
+			type: "GET",
+			data: {"identifier":identifier},
+			success: function(data){
+				// Display error message, if any
+			}
+		})
 	}
 
 	this.rate = function(index, e){

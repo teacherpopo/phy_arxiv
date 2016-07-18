@@ -1,7 +1,3 @@
-# execute by logging into the django shell:
-# python manage.py shell
-# then execute
-# execfile('harvest.py')
 
 import time
 import string
@@ -108,15 +104,23 @@ starttime = time.time()
 
 
 cnx = mysql.connector.connect(host='localhost', user='root', password='utsg9800BAI*', database='arxiv')
-cur = cnx.cursor()
 
-cur.execute(r'SELECT id, datestamp, abstract FROM abstracts WHERE id')
+curA = cnx.cursor()
+curA.execute(r'SELECT datestamp, abstracts_id, rating FROM annotations WHERE annotation="ssgubser"')
+
+annoObjList = {}
+for (rated, abstractId, rating) in curA:
+    annoObjList[abstractId] = {"rating":rating, "rated":str(rated)[:10]}
+curA.close()
+
+cur = cnx.cursor()
+cur.execute(r'SELECT id, datestamp, abstract FROM abstracts')
+
 
 abstractObjList = []
-for (identity, datestamp, mailing) in cur:
+for (abstractId, datestamp, mailing) in cur:
     datestamp = str(datestamp)[:10]
     identifier = trim("identifier", findItem('arXiv', mailing))
-    #created = trim("created", findItem('Date', mailing, identifier))
     created = None
     title = findItem('Title', mailing, identifier)
     authors = trim("authors", findItem('Authors', mailing, identifier))
@@ -132,23 +136,30 @@ for (identity, datestamp, mailing) in cur:
     MSCClass = findItem('MSC-class', mailing, identifier)
     ACMClass = findItem('ACM-class', mailing, identifier)
 
+    rating = None
+    rated = None
+    if abstractId in annoObjList:
+        rating = annoObjList[abstractId]['rating']
+        rated = annoObjList[abstractId]['rated']
+    archived = False
+
+    cached = False
+
     abstractObj = AbstractModel(datestamp = datestamp, identifier = identifier,
-                                    created = created, title = title,
-                                    licenseStr = licenseStr, abstract = abstract,
+                                    created = created, title = title, authors = authors,
+                                    abstract = abstract,
+                                    categories = categories, licenseStr = licenseStr, 
                                     updated = updated, comments = comments,
-                                    journalRef = journalRef, doi = doi,
-                                    categories = categories, authors = authors,
-                                    MSCClass = MSCClass, ACMClass = ACMClass, reportNo = reportNo)
+                                    reportNo = reportNo, journalRef = journalRef, doi = doi,
+                                    MSCClass = MSCClass, ACMClass = ACMClass,
+                                    rating = rating, rated = rated, archived = archived,
+                                    cached = cached)
     abstractObjList.append(abstractObj)
 
 AbstractModel.objects.bulk_create(abstractObjList)
-#cur.execute(r'SELECT datestamp, abstracts_id, rating FROM annotations WHERE annotation="ssgubser"')
 
 
 
-
-#for row in cur.fetchall()[:10]:
-#    print row
 
 cur.close()
 cnx.close()

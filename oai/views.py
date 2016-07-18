@@ -8,6 +8,7 @@ import time
 from django.core import serializers
 from models import * 
 from django.views.decorators.cache import cache_page
+from django.db.models import F
 
 #import datetime
 # Create your views here.
@@ -17,6 +18,18 @@ QUICKBLOCK = 75000
 #@login_required
 def oai(request):
 	return render(request, 'oai/oai.html')
+
+def oai_archive(request):
+	identifier = request.GET['identifier']
+	query = AbstractModel.objects.filter(identifier=identifier)
+	queryCache = AbstractCacheModel.objects.filter(identifier=identifier)
+
+	query.update(archived = (F('archived') + 1) % 2)
+	queryCache.update(archived = (F('archived') + 1) % 2)
+
+	if query.count() is 0:
+		return HttpResponse(r'Error: The database does not contain the item you wish to change.');
+	return HttpResponse(r'oai_archive');
 
 def oai_size(request):
 	return HttpResponse(str(AbstractModel.objects.count()))
@@ -32,10 +45,10 @@ def oai_rate(request):
 	query.update(rating = rating)
 	queryCache.update(rating = rating)
 
-	createCacheFromQuery(query.filter(cached=0))
+	#createCacheFromQuery(query.filter(cached=0))
 	
 	if query.count() is 0:
-		return HttpResponse("Error: The database does not contain the item you wish to rate.");
+		return HttpResponse("Error: The database does not contain the item you wish to change.");
 	return HttpResponse("oai_rate");
 
 
@@ -76,7 +89,7 @@ def oai_filter(request):
 		query = query.filter(categories__icontains = fil)
 
 
-	query = query.values('identifier','title', 'abstract', 'authors', 'rating')
+	query = query.values('identifier','title', 'abstract', 'authors', 'rating', 'archived')
 
 	body = list(query)
 
@@ -118,7 +131,7 @@ def oai_cache(request):
 		query = query.filter(categories__icontains = fil)
 
 
-	query = query.values('identifier','title', 'abstract', 'authors', 'rating')
+	query = query.values('identifier','title', 'abstract', 'authors', 'rating', 'archived')
 
 	body = list(query)
 

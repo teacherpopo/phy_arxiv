@@ -24,16 +24,14 @@ class AbstractCacheModel(models.Model):
 	journalRef = models.CharField(null = True, max_length = 300, default = None)
 	doi = models.CharField(null = True, max_length = 300, default = None)
 	reportNo = models.CharField(null = True, max_length = 100, default = None)
+	MSCClass = models.CharField(null = True, max_length = 100, default = None)
+	ACMClass = models.CharField(null = True, max_length = 100, default = None)
 
 	# ratings
 	rating = models.IntegerField(null = True, default = None)
 	rated = models.DateField(null = True, default = None)
 	archived = models.BooleanField(null = False, default = False)
 
-	# math
-	MSCClass = models.CharField(null = True, max_length = 100, default = None)
-	# computer science
-	ACMClass = models.CharField(null = True, max_length = 100, default = None)
 
 
 
@@ -54,36 +52,18 @@ class AbstractModel(models.Model):
 	journalRef = models.CharField(null = True, max_length = 300, default = None)
 	doi = models.CharField(null = True, max_length = 300, default = None)
 	reportNo = models.CharField(null = True, max_length = 100, default = None)
+	MSCClass = models.CharField(null = True, max_length = 100, default = None)
+	ACMClass = models.CharField(null = True, max_length = 100, default = None)
 
 	# ratings
 	rating = models.IntegerField(null = True, default = None)
 	rated = models.DateField(null = True, default = None)
 	archived = models.IntegerField(null = False, default = 0)
 
-	# math
-	MSCClass = models.CharField(null = True, max_length = 100, default = None)
-	# computer science
-	ACMClass = models.CharField(null = True, max_length = 100, default = None)
-
+	# cache
 	cached = models.IntegerField(null = False, default = 0)
 
 	#class Meta:
 	#	ordering = ['datestamp']
-
-
-def createCacheFromQuery(abstractQuery):
-        cacheList = []
-        for abstractObj in abstractQuery:
-                cacheList.append(AbstractCacheModel(datestamp = abstractObj.datestamp, identifier = abstractObj.identifier, created = abstractObj.created,
-                                  title = abstractObj.title, authors = abstractObj.authors, abstract = abstractObj.abstract,
-                                  categories = abstractObj.categories, licenseStr = abstractObj.licenseStr, updated = abstractObj.updated,
-                                  comments = abstractObj.comments, journalRef = abstractObj.journalRef, doi = abstractObj.doi, reportNo = abstractObj.reportNo,
-                                  rating = abstractObj.rating, rated = abstractObj.rated, archived = abstractObj.archived,
-                                  MSCClass = abstractObj.MSCClass, ACMClass = abstractObj.ACMClass))
-        abstractQuery.update(cached = 1)
-
-        AbstractCacheModel.objects.bulk_create(cacheList)
-
-
 
 
