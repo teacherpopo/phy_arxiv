@@ -50,7 +50,7 @@ var dummy = $("#dummy");
 function AjaxQueue(filterObj){
 	this.queue = [];
 	this.filterObj = filterObj;
-	this.QUICKBLOCK = 75000;
+	this.QUICKBLOCK = 30000;
 	this.isPopping = false;
 
 	// parsedClone must be cloned

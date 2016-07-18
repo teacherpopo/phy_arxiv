@@ -14,7 +14,7 @@ from django.db.models import F
 #import datetime
 # Create your views here.
 
-QUICKBLOCK = 75000
+QUICKBLOCK = 30000
 
 #@login_required
 def oai(request):
