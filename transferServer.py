@@ -1,8 +1,7 @@
-
 import time
 import string
 import json
-import mysql.connector
+import MySQLdb
 from oai.models import *
 
 errors = []
@@ -103,7 +102,7 @@ def findItem(name, mailing, identifier="NO_ID"):
 starttime = time.time()
 
 
-cnx = mysql.connector.connect(host='localhost', user='root', password='', database='arxiv')
+cnx = MySQLdb.connect(host='localhost', user='root', passwd='Reid2Silky', db='arxiv')
 
 curA = cnx.cursor()
 curA.execute(r'SELECT datestamp, abstracts_id, rating FROM annotations WHERE annotation="ssgubser"')
@@ -114,7 +113,7 @@ for (rated, abstractId, rating) in curA:
 curA.close()
 
 cur = cnx.cursor()
-cur.execute(r'SELECT id, datestamp, abstract FROM abstracts')
+cur.execute(r'SELECT id, datestamp, abstract FROM abstracts WHERE id>=0 && id < 100000')
 
 
 abstractObjList = []
@@ -157,8 +156,6 @@ for (abstractId, datestamp, mailing) in cur:
     abstractObjList.append(abstractObj)
 
 AbstractModel.objects.bulk_create(abstractObjList)
-
-
 
 
 cur.close()
