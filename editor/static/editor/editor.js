@@ -24,10 +24,11 @@ function LivePreview(entryId, previewId, manualId, maxLength = 1000){
 	this.base.appendChild(this.preview);
 	this.base.appendChild(this.buffer);
 
-	this.preview.style.position = "absolute";
-	this.buffer.style.position = "absolute";
-	this.preview.style.visibility = "visible";
-	this.buffer.style.visibility = "hidden";
+
+	//this.preview.style.position = "absolute";
+	//this.buffer.style.position = "absolute";
+	this.preview.style.visibility = "block";
+	this.buffer.style.visibility = "none";
 	this.encoded = "";
 
 	this.encodeMathJax = function(mathJax){
@@ -93,6 +94,7 @@ function LivePreview(entryId, previewId, manualId, maxLength = 1000){
 		this.encoded = this.encodeHelper(this.entry.value);
 	}
 
+
 	this.updateBufferText = function(){
 		this.flag = true;
 		this.encodeAllMathJax();
@@ -100,8 +102,8 @@ function LivePreview(entryId, previewId, manualId, maxLength = 1000){
 	};
 
 	this.revealBuffer_HidePreview_Swap = function() {
-		this.buffer.style.visibility = "visible";
-		this.preview.style.visibility = "hidden";
+		this.buffer.style.display = "block";
+		this.preview.style.display = "none";
 		var bufferTmp = this.buffer; var previewTmp = this.preview;
 		this.buffer = previewTmp; this.preview = bufferTmp;
 		this.flag = false;
