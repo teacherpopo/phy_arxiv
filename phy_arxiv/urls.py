@@ -28,6 +28,6 @@ urlpatterns = patterns('',
     #View posts
     url(r'^post/', include(post_urls)),
 
-		#View arXiv/OAI
-		url(r'^oai/', include(oai_urls)),
+    #View arXiv/OAI
+    url(r'^oai/', include(oai_urls)),
 )

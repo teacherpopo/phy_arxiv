@@ -16,6 +16,10 @@
 		return e.keyCode == 82;
 	}
 
+	this.isA = function(e){
+		return e.keyCode == 65;
+	}
+
 	this.isSpace = function(e){
 		return e.keyCode == 32;
 	}
@@ -188,10 +192,18 @@ function Filter(filterId, displayId){
 	this.headerDisplay.append("We found ").append(this.count).append(" results.<br><br>");
 	this.display.append(this.headerDisplay).append(this.query);
 
+	this.blockSpam = false;
+
 	$(document).bind("keydown", function(e){
+		if (this.blockSpam){return;}
+		else{
+			this.blockSpam = true;
+			setTimeout(function(filterObj){filterObj.blockSpam = false;}, 50, this);
+		}
 		var parent = this.filterObj;
 		var filter = parent.filter;
 		if (e.ctrlKey && keyboard.isEnter(e)){
+			
 			if (filter.is(":focus")){
 				if (parent.canSearch() && parent.body.length > 0){
 					filter.blur();
@@ -215,6 +227,8 @@ function Filter(filterId, displayId){
 					parent.moveSelection(parent.N);
 				}else if (keyboard.isNumeric(e) || keyboard.isR(e)){
 					parent.rate(parent.selection, e);
+				}else if (keyboard.isA(e)){
+					parent.archive(parent.selection);
 				}
 			}
 		}
@@ -486,16 +500,29 @@ function Filter(filterId, displayId){
 		this.aQueue.Push(parsedClone = $.extend({}, this.parsed), metaClone = $.extend({}, this.meta), cache = true);
 	}
 
+	this.avoidNull = function(element, replacement){
+		if (element == null){
+			return replacement;
+		}else{
+			return element;
+		}
+	}
+
 	this.elementHTML = function(index){
 		var jsonElement = this.body[index];
-		var identifier = jsonElement["identifier"];
-		var title = jsonElement["title"];
-		var authors = JSON.parse(jsonElement["authors"]);
-		var rating = jsonElement["rating"];	
+		var identifier = this.avoidNull(jsonElement["identifier"], "[no identifier]");
+		var title = this.avoidNull(jsonElement["title"], "[no title]");
+		var authors = this.avoidNull(JSON.parse(jsonElement["authors"]), []);
+		var rating = jsonElement["rating"];
+		var archived = jsonElement["archived"];
 		var printHTML = "<font color=\"#FF0000\">" +(index+1)+"</font>" + "  <b>"+identifier + "</b>";
 		if (rating != null){
 			printHTML += " <font color=\"#BF00FF\">r" + rating.toString() + "</font>";
 		}
+		if (archived){
+			printHTML += " <font color=\"#FFC300\">a</font>";
+		}
+
 		printHTML += "<br>";
 		printHTML += title + "<br>";
 
@@ -578,6 +605,28 @@ function Filter(filterId, displayId){
 			}
 		}
 	}
+
+	this.updateArchive = function(identifier){
+		for (var i = 0; i < this.body.length; i++){
+			if (this.body[i]["identifier"] == identifier){this.body[i]["archived"] = (this.body[i]["archived"]+1)%2;}
+		}
+	}
+
+	this.archive = function(index){
+		var tagElement = $("#tagElement-" + index.toString());
+		var identifier = tagElement[0].identifier;
+		this.updateArchive(identifier);
+		this.displaySearch();
+		$.ajax({
+			url: "/oai/archive",
+			type: "GET",
+			data: {"identifier":identifier},
+			success: function(data){
+				// Display error message, if any
+			}
+		})
+	}
+
 
 	this.updateRatings = function(identifier, rating){
 		if (rating < 0){rating = null;}
